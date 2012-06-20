@@ -4,7 +4,7 @@
 // Twitter:  @bengarvey
 // ben@bengarvey.com
 
-// drawSparkLink 	Draws a line graph the size of your canvas.  Intended for tiny canvases to make Tufte style sparklines.
+// drawSparkLine	Draws a line graph the size of your canvas.  Intended for tiny canvases to make Tufte style sparklines.
 // It automatically y-scales the graph to within one standard deviation of the mean
 // Parameters:	
 // canvas_name  	The id of the <canvas> tag you want the sparkline to appear in
