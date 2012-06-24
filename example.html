@@ -23,10 +23,15 @@
 			var barcolors	= new Array('#ff0000','#ff8000','#ffff00','#0080ff');
 			drawStackedBar('bar3', barvalues, barcolors);
 			
+			var wlvalues = new Array(3,2,5,4,2,-2,-5,-7,-9,-4,-1,0,-3,-1,4,3,6,5,7,5,9,4,-1,-5,-8,-6,-7,-1,2,3,7,10,4,3,5,7,9);
+			drawWinLossBarGraph('bar4', wlvalues, '', '');
+			
 			var xdata = new Array(11,14,13,12, 3,18,23,29,40,44,45,42,40,35,37,38,50,52,53,52,45,40,35,37,11,14,13,12, 3,18,23,29,40,44,45,42,40,35,37,38,50,52,53,52,45,40,35,37);
 			var ydata = new Array(12,30,16,38,40,70,60,20,40,5,7,8,40,41,39,50,60,85,69,45,46,47,23,45,67,78,12,30,16,38,40,70,60,20,40,5,7,8,40,41,39,50,60,85,69,45,46,47,23,40);
 			
 			drawScatterPlot('scatter1', 100, 100, xdata, ydata, '#2288FF');
+			
+
 			
 			
 		}
@@ -91,9 +96,14 @@
 				<td>Example 3: Stacked Bar Graph</td>
 				<td><canvas id="bar3" height="15" width="150"></canvas></td>
 			</tr>
+			<tr>
+				<td>Example 4: Win / Loss Graph</td>
+				<td><canvas id="bar4" height="15" width="150"></canvas></td>
+			</tr>
 		</table>
 		<h3>Scatter Plot</h3>
 		<div><canvas id="scatter1" height="50" width="200"></canvas></div>
 	</div>
+	
 </body>
 </html>

@@ -21,7 +21,7 @@
 // CANVAS_NAME-last for last value
 // CANVAS_NAME-first for first value
 //
-function drawSparkline(canvas_name, scale_type, min_range, max_range, data, moving, pre) {
+function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show_moving, pre) {
 		
 			// Get the canvas element we need
 			if (drawingCanvas = document.getElementById(canvas_name) ) {
@@ -36,16 +36,14 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, movi
 			var yscale = 0;
 			
 			// default scale is min and max values
-			var scale = data.max;
-			var floor = data.min;
+			var scale = Math.max.apply(Math, data);
+			var floor = Math.min.apply(Math, data);
 			
 			// How should we scale this?
 			if (scale_type == "sd") { // standard deviation?
-				var scale = getAverageFromNumArr(data) + (getStandardDeviation(data, 0)*1);
-				var floor = getAverageFromNumArr(data) - (getStandardDeviation(data, 0)*1);
+				scale = getAverageFromNumArr(data) + (getStandardDeviation(data, 0)*1);
+				floor = getAverageFromNumArr(data) - (getStandardDeviation(data, 0)*1);
 			}
-			
-			//alert(scale + " " + floor);
 			
 			// Reset the floor to zero if it is below.  Will change this later as an option
 			if (floor < 0) { 
@@ -129,7 +127,7 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, movi
 				context.beginPath();
 								
 				// Draw the moving average
-				if (moving) {		
+				if (show_moving) {		
 					for (i in moving) {
 					
 						// Calculate the y value of the point for the sparkline	
@@ -294,6 +292,84 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, movi
 					}
 	}
 	
+	// drawWinLossBarGraph	Draws vertical bar graph used for win/loss style graphs. They're also useful for showing progres over time.
+	//
+	// Parameters:
+	// canvas_name		id of the canvas tag
+	// values			array of values to draw in the bar graph (actual value, not a %)
+	// poscolor			hex color value of the bar graph for positive values (green if left blank)
+	// negcolo			hex color value of the bar graph for negative values (red if left blank)
+	//
+	function drawWinLossBarGraph(canvas_name, values, poscolor, negcolor) {
+					drawingCanvas = document.getElementById(canvas_name);
+										
+					// Check the element is in the DOM and the browser supports canvas
+					if(drawingCanvas && drawingCanvas.getContext) {	
+					
+						var width 	= 5;
+						var height 	= drawingCanvas.height;
+						var width 	= drawingCanvas.width;
+						var x 		= 0;
+						var count 	= 0;
+						var xmargin	= 2;
+						var ymargin 	= 2;
+						var xpad	= 2;
+						var color	= "";
+						var barheight	= 0;
+						var scale 	= Math.max.apply(Math, values);
+						var floor 	= Math.min.apply(Math, values);
+						var centery	= 0;
+						
+						// Not sure if setting these to 0 is the best way, but I think it's the most expected handling of weird values
+						if (floor > 0) {
+							floor = 0;
+						}
+						
+						if (scale < 0) {
+							scale = 0;
+						}
+						
+						centery = (scale+Math.abs(floor))/2;
+						
+						// If these colors weren't set, use defaults
+						if (poscolor == "") {
+							poscolor = "#00FF00";
+						}
+						
+						if (negcolor == "") {
+							negcolor = "#FF0000";
+						}
+						
+						// Calculate the width of each bar based on the canvas width and the number of values
+						var barwidth = ((width - (ymargin*2)) / values.length);
+						
+						// Start at the first margin
+						x = xmargin;
+						
+						// Loop through and draw each bar
+						for (i in values) {
+
+							// Set color
+							color = poscolor;
+							
+							if (values[i] < 0) {
+								color = negcolor;
+							}
+							
+							// Scale bar height
+							barheight = ((values[i] / (scale + Math.abs(floor))) * height) - ymargin;
+							
+							//alert(values[i]);
+							
+							// Draw the bar
+							context = drawingCanvas.getContext('2d');				
+							context.fillStyle  = color; 
+							context.fillRect (x, centery, barwidth, (barheight*-1));		
+							x = x + barwidth + xpad;
+						}
+					}
+	}
+	
 	// drawScatterPlot	Draws a scatter plot in an html canvas
 	//
 	// Parameters:
@@ -302,6 +378,7 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, movi
 	// yscale			max y value of the scatterplot
 	// xdata			array of x axis data (actual data points, not percentages)
 	// ydata			array of y axis data (actual data points, not percentages)
+	// color			color of the normal data points
 	function drawScatterPlot(canvas_name, xscale, yscale, xdata, ydata, color) {
 
 			//alert(canvas_name + ", " + xscale + ", " + yscale + ", " + xdata + ", " + ydata + ", " + color);
@@ -343,8 +420,8 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, movi
 						i = i + 1;
 					}
 					
-					x = (avg(xdata) / xscale) * cwidth;
-					y = cheight - ((avg(ydata) / yscale) * cheight);
+					x = (avg(xdata, 2) / xscale) * cwidth;
+					y = cheight - ((avg(ydata, 2) / yscale) * cheight);
 					
 						// Add a dot this datapoint
 						context.fillStyle = '#00F';
@@ -380,16 +457,17 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, movi
 	
 		return val;
 	}
+
+	function avg(numArr, numOfDec) {
+		if( !isArray( numArr ) ){ return false;	}
+		var i = numArr.length, 
+			sum = 0;
+		while( i-- ){
+			sum += numArr[ i ];
+		}
+		return getNumWithSetDec( (sum / numArr.length ), numOfDec );
+	}
 	
-	// function prototype for max value of an array
-	Array.max = function( array ){
-		return Math.max.apply( Math, array );
-	};
-	
-	// function prototype for min value of an array
-	Array.min = function( array ){
-		return Math.min.apply( Math, array );
-	};
 
 	// Attribution to @LarryBattle http://bateru.com/news/2011/03/javascript-standard-deviation-variance-average-functions/
 	var isArray = function (obj) {
