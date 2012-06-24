@@ -6,15 +6,94 @@
 	<script>
 		function init() {
 			
+			var dataset1 = new Array(11,14,13,12,3,18,23,29,40,44,45,42,40,35,37,38,50,52,53,52,45,40,35,37,11,14,13,12,3,18,23,29,40,44,45,42,40,35,37,38,50,52,53,52,45,40,35,37);
+			var dataset2 = new Array(11,14,13,12,3,18,23,29,40,44,45,42,40,35,37,38,50,52,53,52,45,40,35,37,11,14,13,12,3,18,23,29,40,44,45,42,40,35,37,38,50,52,53,52,45,40,35,37);
+			var dataset3 = new Array(12,30,16,38,40,70,60,20,40,5,7,8,40,41,39,50,60,85,69,45,46,47,23,45,67,78);
+			var dataset4 = new Array(12,30,16,38,40,70,60,20,40,5,7,8,40,41,39,50,60,85,69,45,46,47,23,45,67,78);
+			
+			drawSparkline('dataset1', '', 10, 40, dataset1, false, '');
+			drawSparkline('dataset2', 'sd', 10, 40, dataset2, false, '');
+			drawSparkline('dataset3', '', 10, 40, dataset3, true, '');
+			drawSparkline('dataset4', 'sd', 10, 40, dataset3, true, '$');
+			
+			drawBar('bar1', 0.75, '#0080ff');
+			drawBar('bar2', 0.25, '#00ff00');
+			
+			var barvalues = new Array(0.65, 0.18, 0.1, 0.05);
+			var barcolors	= new Array('#ff0000','#ff8000','#ffff00','#0080ff');
+			drawStackedBar('bar3', barvalues, barcolors);
+			
+			var xdata = new Array(11,14,13,12, 3,18,23,29,40,44,45,42,40,35,37,38,50,52,53,52,45,40,35,37,11,14,13,12, 3,18,23,29,40,44,45,42,40,35,37,38,50,52,53,52,45,40,35,37);
+			var ydata = new Array(12,30,16,38,40,70,60,20,40,5,7,8,40,41,39,50,60,85,69,45,46,47,23,45,67,78,12,30,16,38,40,70,60,20,40,5,7,8,40,41,39,50,60,85,69,45,46,47,23,40);
+			
+			drawScatterPlot('scatter1', 100, 100, xdata, ydata, '#2288FF');
+			
 			
 		}
 	</script>
 </head>
-<body>
-	<div id="sparkline-example">
+<body onload="javascript:init();">
+	<div id="example">
+		<h3>Sparkline Table</h3>
+		<table>
+			<tr>	
+				<th>Name</th><th>First</th><th>Sparkline</th><th>Last</th><th>Min</th><th>Max</th>
+			</tr>	
+			<tr>
+				<td>Example 1: Basic</td>
+				<td id="dataset1-first"</td>
+				<td><canvas id="dataset1" width="100" height="15"></canvas></td>
+				<td id="dataset1-last"></td>
+				<td id="dataset1-min"></td>
+				<td id="dataset1-max"></td>
+			</tr>
+			<tr>
+				<td>Example 2:  Std Deviation Scale</td>
+				<td id="dataset2-first"</td>
+				<td><canvas id="dataset2" width="100" height="15"></canvas></td>
+				<td id="dataset2-last"></td>
+				<td id="dataset2-min"></td>
+				<td id="dataset2-max"></td>
+			</tr>
+			<tr>
+				<td>Example 3:  Moving Average</td>
+				<td id="dataset3-first"</td>
+				<td><canvas id="dataset3" width="100" height="15"></canvas></td>
+				<td id="dataset3-last"></td>
+				<td id="dataset3-min"></td>
+				<td id="dataset3-max"></td>
+			</tr>
+			<tr>
+				<td>Example 4:  Using a prefix</td>
+				<td id="dataset4-first"</td>
+				<td><canvas id="dataset4" width="100" height="15"></canvas></td>
+				<td id="dataset4-last"></td>
+				<td id="dataset4-min"></td>
+				<td id="dataset4-max"></td>
+			</tr>
+		</table>
+		
+		<h3>Bar Graphs</h3>
 		<table>
 			<tr>
-				<td>Sparkline Example #1</td><td><canvas id="dataset1" width="100" height="15"></canvas></td><td></td><td></td>
+				<th>Title</th>
+				<th>Bar</th>
 			</tr>
+			<tr>
+				<td>Example 1</td>
+				<td><canvas id="bar1" height="15" width="150"></canvas></td>
+			</tr>
+			<tr>
+				<td>Example 2</td>
+				<td><canvas id="bar2" height="15" width="150"></canvas></td>
+			</tr>
+			<tr>
+				<td>Example 3: Stacked Bar Graph</td>
+				<td><canvas id="bar3" height="15" width="150"></canvas></td>
+			</tr>
+		</table>
+		<h3>Scatter Plot</h3>
+		<div><canvas id="scatter1" height="50" width="200"></canvas></div>
 	</div>
 </body>
+</html>
