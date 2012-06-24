@@ -11,6 +11,7 @@
 // min_range 		Lower bound of gray rectangular box (use 0 for no box)
 // max_range		Upper bound of gray rectangular box (use 0 for no box)
 // data				Array of values to plot
+// moving			true or false.  Do we show the moving average of the values in the sparkline?
 // pre 				We can display min and max values in the display. If if needs a prefix (like $ for money), include it here as a string.
 //
 // Uses:			
@@ -20,7 +21,7 @@
 // CANVAS_NAME-last for last value
 // CANVAS_NAME-first for first value
 //
-function drawSparkline(canvas_name, min_range, max_range, data, pre) {
+function drawSparkline(canvas_name, scale_type, min_range, max_range, data, moving, pre) {
 		
 			// Get the canvas element we need
 			if (drawingCanvas = document.getElementById(canvas_name) ) {
@@ -34,10 +35,17 @@ function drawSparkline(canvas_name, min_range, max_range, data, pre) {
 			var cwmin = hpadding/2;
 			var yscale = 0;
 			
-			//var scale = data.max; // Use max value for y scale instead
-			var scale = getAverageFromNumArr(data) + (getStandardDeviation(data, 0)*1);
-			//var floor = data.min; // Use min value for y scale instead
-			var floor = getAverageFromNumArr(data) - (getStandardDeviation(data, 0)*1);
+			// default scale is min and max values
+			var scale = data.max;
+			var floor = data.min;
+			
+			// How should we scale this?
+			if (scale_type == "sd") { // standard deviation?
+				var scale = getAverageFromNumArr(data) + (getStandardDeviation(data, 0)*1);
+				var floor = getAverageFromNumArr(data) - (getStandardDeviation(data, 0)*1);
+			}
+			
+			//alert(scale + " " + floor);
 			
 			// Reset the floor to zero if it is below.  Will change this later as an option
 			if (floor < 0) { 
@@ -121,16 +129,18 @@ function drawSparkline(canvas_name, min_range, max_range, data, pre) {
 				context.beginPath();
 								
 				// Draw the moving average
-				for (i in moving) {
-				
-					// Calculate the y value of the point for the sparkline	
-					yscale = (( (moving[i] - floor) / (scale - floor) ) * cheight) - chmin;
+				if (moving) {		
+					for (i in moving) {
 					
-					// This spreads the sparkline across the whole canvas and makes sure we don't cut off the ends
-					x = ((parseInt(i) + data.length - moving.length) * (cwidth/(data.length)));					
-					
-					// Upper left is 0,0 on the canvas, so we have to translate it 
-					context.lineTo(x, (cheight - yscale));
+						// Calculate the y value of the point for the sparkline	
+						yscale = (( (moving[i] - floor) / (scale - floor) ) * cheight) - chmin;
+						
+						// This spreads the sparkline across the whole canvas and makes sure we don't cut off the ends
+						x = ((parseInt(i) + data.length - moving.length) * (cwidth/(data.length)));					
+						
+						// Upper left is 0,0 on the canvas, so we have to translate it 
+						context.lineTo(x, (cheight - yscale));
+					}
 				}
 				
 				context.stroke();
@@ -194,20 +204,31 @@ function drawSparkline(canvas_name, min_range, max_range, data, pre) {
 	
 	}
 	
-	// Creates a moving average from the data array and can be of any duration using length
+	// createMovingAverage	Creates a moving average from the data array and can be of any duration using length
+	//
+	// Parameters:
+	// data		array of values
+	// length	length of values to use in the moving average.  (i.e. use every 3 values, 6 values, etc.)
+	// 
+	// Example:
+	// myValues = new Array(1,3,2,1,6,7,8,10);
+	// myArray = createMovingAverage(myValues, 3);
 	function createMovingAverage(data, length) {
 	
 		var avg = 0;
 		var moving = new Array();
 		
+		// Loop through the values
 		for(i=length-1; i<(data.length-1); i++) {
 		
 			avg = 0;
 			
+			// Build our moving average value
 			for (j=0; j<length; j++) {
 				avg = avg + data[i-j];
 			}			
 			
+			// Add it to our new array
 			avg = avg / length;
 			moving.push(avg);	
 			
@@ -217,6 +238,15 @@ function drawSparkline(canvas_name, min_range, max_range, data, pre) {
 		
 	}
 		
+	// drawbar 	Simply draw a bar graph
+	// 
+	// Parameters:
+	// canvas_name	id value of the <canvas> tag
+	// value		how wide you want it to be as a % of the canvas's width
+	// color		hex color value of the bar graph
+	//
+	// Example:
+	// drawBar('barcanvas', 0.75, '#FF0000');
 	function drawBar(canvas_name, value, color) {
 					drawingCanvas = document.getElementById(canvas_name);
 					
@@ -233,6 +263,12 @@ function drawSparkline(canvas_name, min_range, max_range, data, pre) {
 					}
 	}
 	
+	// drawStackedBar	Draw a stacked bar graph in one canvas tag using an array of values and an array of colors
+	//
+	// Parameters:
+	// canvas_name		id of the canvas tag
+	// values			array of values to draw in the bar graph as a % of the canvas's width
+	// color		hex color value of the bar graph
 	function drawStackedBar(canvas_name, values, colors) {
 					drawingCanvas = document.getElementById(canvas_name);
 										
@@ -258,8 +294,15 @@ function drawSparkline(canvas_name, min_range, max_range, data, pre) {
 					}
 	}
 	
-// draws a scatter plot in an html canvas
-function drawScatterPlot(canvas_name, xscale, yscale, xdata, ydata, color) {
+	// drawScatterPlot	Draws a scatter plot in an html canvas
+	//
+	// Parameters:
+	// canvas_name		id of the canvas tag
+	// xscale			max x value of the scatterplot 
+	// yscale			max y value of the scatterplot
+	// xdata			array of x axis data (actual data points, not percentages)
+	// ydata			array of y axis data (actual data points, not percentages)
+	function drawScatterPlot(canvas_name, xscale, yscale, xdata, ydata, color) {
 
 			//alert(canvas_name + ", " + xscale + ", " + yscale + ", " + xdata + ", " + ydata + ", " + color);
 		
@@ -318,71 +361,80 @@ function drawScatterPlot(canvas_name, xscale, yscale, xdata, ydata, color) {
 	
 	}	
 
-function formatNumber(val, pre) {
-
-	if (val >= 1000 && val < 1000000) {
-		val = pre + (val / 1000).toFixed(0) + "K";
-	}
-	else if (val >= 1000000) {
-		val = pre + (val / 1000000).toFixed(0) + "M";
-	}
-	else {
-		val = pre + val.toFixed(0);
-	}
-
-	return val;
-}
+	// formstNumber		Rounds and formats large numbers (over 1000 or 1000000)
+	//
+	// Parameters:
+	// val				The value of the number to display
+	// pre				If this needs a prefix (like $) pass it in here
+	function formatNumber(val, pre) {
 	
-Array.max = function( array ){
-	return Math.max.apply( Math, array );
-};
-
-Array.min = function( array ){
-	return Math.min.apply( Math, array );
-};
+		if (val >= 1000 && val < 1000000) {
+			val = pre + (val / 1000).toFixed(0) + "K";
+		}
+		else if (val >= 1000000) {
+			val = pre + (val / 1000000).toFixed(0) + "M";
+		}
+		else {
+			val = pre + val.toFixed(0);
+		}
+	
+		return val;
+	}
+	
+	// function prototype for max value of an array
+	Array.max = function( array ){
+		return Math.max.apply( Math, array );
+	};
+	
+	// function prototype for min value of an array
+	Array.min = function( array ){
+		return Math.min.apply( Math, array );
+	};
 
 	// Attribution to @LarryBattle http://bateru.com/news/2011/03/javascript-standard-deviation-variance-average-functions/
 	var isArray = function (obj) {
 		return Object.prototype.toString.call(obj) === "[object Array]";
 	}
 
-	var getNumWithSetDec = function( num, numOfDec ) {	
-		var pow10s = Math.pow( 10, numOfDec || 0 );
-		return ( numOfDec ) ? Math.round( pow10s * num ) / pow10s : num;
-	}
+	// Series of functions to calculate standard deviations
 	
-	var getAverageFromNumArr = function( numArr, numOfDec ){
-		if( !isArray( numArr ) ){ return false;	}
-		var i = numArr.length, 
-			sum = 0;
-		while( i-- ){
-			sum += numArr[ i ];
-		}
-		return getNumWithSetDec( (sum / numArr.length ), numOfDec );
-	}
-	
-	var getVariance = function( numArr, numOfDec ) {
-		if( !isArray(numArr) ) { 
-			return false; 
+		var getNumWithSetDec = function( num, numOfDec ) {	
+			var pow10s = Math.pow( 10, numOfDec || 0 );
+			return ( numOfDec ) ? Math.round( pow10s * num ) / pow10s : num;
 		}
 		
-		var avg = getAverageFromNumArr( numArr, numOfDec ), 
-			i = numArr.length,
-			v = 0;
-	 
-		while( i-- ) {
-			v += Math.pow( (numArr[ i ] - avg), 2 );
-		}
-		v /= numArr.length;
-		return getNumWithSetDec( v, numOfDec );
-	}
-	
-	var getStandardDeviation = function( numArr, numOfDec ) {
-		if( !isArray(numArr) ) { 
-			return false; 
+		var getAverageFromNumArr = function( numArr, numOfDec ){
+			if( !isArray( numArr ) ){ return false;	}
+			var i = numArr.length, 
+				sum = 0;
+			while( i-- ){
+				sum += numArr[ i ];
+			}
+			return getNumWithSetDec( (sum / numArr.length ), numOfDec );
 		}
 		
-		var stdDev = Math.sqrt( getVariance( numArr, numOfDec ) );
-		return getNumWithSetDec( stdDev, numOfDec );
+		var getVariance = function( numArr, numOfDec ) {
+			if( !isArray(numArr) ) { 
+				return false; 
+			}
+			
+			var avg = getAverageFromNumArr( numArr, numOfDec ), 
+				i = numArr.length,
+				v = 0;
+		 
+			while( i-- ) {
+				v += Math.pow( (numArr[ i ] - avg), 2 );
+			}
+			v /= numArr.length;
+			return getNumWithSetDec( v, numOfDec );
+		}
 		
-	};
+		var getStandardDeviation = function( numArr, numOfDec ) {
+			if( !isArray(numArr) ) { 
+				return false; 
+			}
+			
+			var stdDev = Math.sqrt( getVariance( numArr, numOfDec ) );
+			return getNumWithSetDec( stdDev, numOfDec );
+			
+		};
