@@ -359,6 +359,8 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 							// Scale bar height
 							barheight = ((values[i] / (scale + Math.abs(floor))) * height) - ymargin;
 							
+							alert(barheight);
+							
 							//alert(values[i]);
 							
 							// Draw the bar
