@@ -306,7 +306,6 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 					// Check the element is in the DOM and the browser supports canvas
 					if(drawingCanvas && drawingCanvas.getContext) {	
 					
-						var width 	= 5;
 						var height 	= drawingCanvas.height;
 						var width 	= drawingCanvas.width;
 						var x 		= 0;
@@ -316,9 +315,11 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 						var xpad	= 2;
 						var color	= "";
 						var barheight	= 0;
+						var barwidth	= 0;
 						var scale 	= Math.max.apply(Math, values);
 						var floor 	= Math.min.apply(Math, values);
 						var centery	= 0;
+						var range 	= 0;
 						
 						// Not sure if setting these to 0 is the best way, but I think it's the most expected handling of weird values
 						if (floor > 0) {
@@ -328,8 +329,6 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 						if (scale < 0) {
 							scale = 0;
 						}
-						
-						centery = (scale+Math.abs(floor))/2;
 						
 						// If these colors weren't set, use defaults
 						if (poscolor == "") {
@@ -341,10 +340,14 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 						}
 						
 						// Calculate the width of each bar based on the canvas width and the number of values
-						var barwidth = ((width - (ymargin*2)) / values.length);
+						barwidth = width  / (values.length * xpad);
 						
 						// Start at the first margin
 						x = xmargin;
+						
+						// Find the total range so we can scale the bars
+						range = scale - floor;
+						centery = height * 0.5;
 						
 						// Loop through and draw each bar
 						for (i in values) {
@@ -357,16 +360,12 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 							}
 							
 							// Scale bar height
-							barheight = ((values[i] / (scale + Math.abs(floor))) * height) - ymargin;
-							
-							alert(barheight);
-							
-							//alert(values[i]);
+							barheight = ((values[i] / range) * height);
 							
 							// Draw the bar
 							context = drawingCanvas.getContext('2d');				
 							context.fillStyle  = color; 
-							context.fillRect (x, centery, barwidth, (barheight*-1));		
+							context.fillRect (x, centery, barwidth, (barheight*(-1)));		
 							x = x + barwidth + xpad;
 						}
 					}
