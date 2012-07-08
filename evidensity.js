@@ -281,12 +281,16 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 						var height = drawingCanvas.height;
 						
 						for (i in values) {
-							width = (drawingCanvas.width-30) * values[i];
-							//alert(drawingCanvas.width);
-							context = drawingCanvas.getContext('2d');				
-							context.fillStyle  = colors[count]; 
-							context.fillRect (x, 0, x + width, height);		
-							x = x + width;
+						
+							// Calculate the width for the bar
+							width 				= (drawingCanvas.width-30) * values[i];
+							context 			= drawingCanvas.getContext('2d');	
+							
+							// Set the color			
+							context.fillStyle  	= colors[count]; 
+							
+							context.fillRect(x, 0, x + width, height);		
+							x 					= x + width;
 							count++;
 						}
 					}
@@ -371,6 +375,135 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 					}
 	}
 	
+	// drawWhiskerSparkline 	Draws a whisker sparkline
+	//
+	// Parameters:
+	// canvas_name		id of the canvas element
+	// data				2 dimensional array of values
+	// color			array of color values.  Should be equal to the number of lines to draw in the whisker sparkline.
+	//					If no colors are passed in, we'll try to come up with our own
+	// names			array of names corresponding to each line of values in data and the colors in color
+	function drawWhiskerSparkline(table_name, data, color, names) {
+	
+		// Genrate the HTML we need
+		var html 			= "";
+		var first 			= true;
+		var canvas_name 	= "whisker1";
+		var max 			= "";
+		var min				= "";
+		
+		// array of team objects
+		var teams			= new Array();
+	
+		// Array of their last numerical values
+		var standings = new Array();
+	
+		// First loop through and grab the largest and smallest values
+		for (var d in data) {
+		
+			teams[d] = {};
+		
+			if (first) {
+				html += "<tr>" 
+					+ "<td id=name-" + d + "></td>" 
+					+ "<td rowspan=" + data.length + "><canvas id=whisker1 height=100 width=300></canvas></td>" 
+					+ "<td id=standing-" + d + "></td>" 
+				+ "</tr>";
+				first = false;
+			}
+			else {
+				html += "<tr>" 
+					+ "<td id=name-" + d + "></td>" 
+					+ "<td id=standing-" + d + "></td>" 
+				+ "</tr>";
+			}
+					
+			for (var i in data[d]) {
+						
+				// Find max value
+				if (max < data[d][i]) {
+					max = data[d][i];
+				}		
+							
+				// Find min value		
+				if (min > data[d][i]) {
+					min = data[d][i];
+				}
+				
+				if (data[d][i] !== '') {
+					teams[d].standing = data[d][i];
+				}
+			}
+			
+			teams[d].name	= names[d];
+			teams[d].color	= color[d];
+		}
+		
+		document.getElementById(table_name).innerHTML = html;
+		
+
+
+		// Get the canvas element we need
+		if (drawingCanvas = document.getElementById(canvas_name) ) {
+									
+			// Check the element is in the DOM and the browser supports canvas
+			if(drawingCanvas && drawingCanvas.getContext) {
+				
+				// Initaliase a 2-dimensional drawing context
+				context = drawingCanvas.getContext('2d');
+				
+				// some values I need to set before drawing
+
+				var height 		= drawingCanvas.height;
+				var width 		= drawingCanvas.width;
+				var y 			= 0;
+				var x			= 0;
+
+				//alert("max:  " + max + ", min:" + min);
+				
+				// Loop through the data points and plot on the canvas
+				for (d in data) {
+					//alert(context);
+					//context.fillStyle   = '#00f';
+					context.strokeStyle = color[d];
+					context.lineWidth   = 1;
+					context.beginPath();
+				
+					for (i=0; i<data[d].length; i++) {
+				
+						if (data[d][i] !== '') {
+							// Translate y value to our scale
+							y = height - (((data[d][i] - min) / (max - min)) * height);
+				
+							// This spreads the sparkline across the whole canvas
+							x = i * (width/(data[d].length));
+										
+							// Upper left is 0,0 on the canvas, so we have to translate it 
+							context.lineTo(x, y);
+						
+						}
+					}
+					
+					context.stroke();
+				}
+					
+				teams.sort( 
+					function(a, b) { 
+						return b.standing - a.standing;
+					}
+				);
+				
+				for (i in teams) {
+					document.getElementById("standing-" + i).innerHTML 		= teams[i].standing; 
+					document.getElementById("name-" 	+ i).innerHTML 		= teams[i].name;
+					document.getElementById("standing-" + i).style.color 	= teams[i].color; 
+					document.getElementById("name-" 	+ i).style.color 	= teams[i].color;
+				}
+			
+			}
+		}
+	}
+	
 	// drawScatterPlot	Draws a scatter plot in an html canvas
 	//
 	// Parameters:
@@ -439,7 +572,7 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 	
 	}	
 
-	// formstNumber		Rounds and formats large numbers (over 1000 or 1000000)
+	// formatNumber		Rounds and formats large numbers (over 1000 or 1000000)
 	//
 	// Parameters:
 	// val				The value of the number to display
