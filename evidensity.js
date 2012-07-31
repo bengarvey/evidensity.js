@@ -503,6 +503,174 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 		}
 	}
 	
+	// drawTreeMap	Draws a Treemap on an HTML5 canvas
+	//
+	// Parameters:
+	// canvas_name		id of the canvas tag
+	// data				array of values to be mapped
+	// color			array of colors to use that corresponds with values in data
+	function drawTreeMap(canvas_name, data, color) {
+	
+		// Get the canvas element we need
+		if (drawingCanvas = document.getElementById(canvas_name) ) {
+									
+			// Check the element is in the DOM and the browser supports canvas
+			if(drawingCanvas && drawingCanvas.getContext) {
+				
+				// Initaliase a 2-dimensional drawing context
+				context = drawingCanvas.getContext('2d');
+				drawingCanvas.resizing = false;
+	
+				boxes = new Array();
+			
+				// First create the box objects
+				for(d in data) {
+					boxes[d] 			= {};
+					boxes[d].size 		= data[d];
+					boxes[d].color 		= color[d];
+				}
+				
+				drawingCanvas.boxArray = new Array();
+				//drawingCanvas.boxArray[0] = boxes[0];
+				
+				for(d in boxes) {
+					drawingCanvas.boxArray[d] = boxes[d];
+				}
+				
+				
+				boxes.sort( 
+					function(a, b) { 
+						return b.size - a.size;
+					}
+				);
+		
+				var height 		= drawingCanvas.height;
+				var width 		= drawingCanvas.width;
+				
+				// Render the boxes
+				renderBox(canvas_name, context, boxes, 0, 0, 75, width, height);		
+				canvas = document.getElementById(canvas_name);
+                        
+                /*
+			    canvas.addEventListener("click", 
+			     					function(e) {				
+							// We've clicked.  Check to see where it is
+							var rect = canvas.getBoundingClientRect();
+							
+							if (canvas.resizing) {
+							
+								canvas.height = e.clientY-rect.top;
+								canvas.width = e.clientX-rect.left;
+								canvas.resizing = false;
+								renderBox(canvas.id, context, canvas.boxArray, 0, 0, 75, canvas.width, canvas.height);
+
+							}
+							else {
+											
+								if ( (e.clientX > canvas.width - 10) && (e.clientY > canvas.height - 10)) {
+									
+									//alert("bottom corner");
+									canvas.resizing = true;
+								}
+							}
+						
+							
+							})
+
+				*/
+
+		
+			}
+		}
+		
+	}
+	
+	// renderBox 		Renders a single treemap box
+	//
+	// Parameters:
+	// context			drawing context
+	// boxes			array of box objects to be rendered
+	// x				starting x value of the drawing context
+	// y				starting y value of the drawing context
+	// scale			scale for values
+	//
+	// Returns:			array of objects to be rendered
+	function renderBox(canvas_name, context, boxes, x, y, scale, width, height) {
+	
+		if (boxes.length > 0) {
+	
+			var box = boxes.shift();
+	
+			var w   = (Math.sqrt(box.size) / scale) * width;
+			var h 	= w;
+			
+			
+			if (h > ( (height-y) / 2)) {
+				var temp = w * h;
+				h = height-y;
+				w = temp / h;
+				
+			}
+			
+			
+			var skipped = false;
+			
+			//alert("X:  " + x + " +  " + w + " = " + (x + w) + " vs " + width + " | " + box.size);
+			//alert("Y:  " + y + " +  " + h + " = " + (y + h) + " vs " + height + " | " + box.size);
+			
+			// If I draw this box, will I exceed the boundary?
+			if (x + w > width || y + h > height) {
+			
+				// We've reached the end of our room.  Unshift this one and see if we can draw a different one
+				//boxes.shift();
+				skipped = true;
+				w = 0;
+				h = 0;
+				//alert("no room at " + x + " " + y);
+			
+			}
+			else {
+		
+				// Draw the box
+				
+				context.fillStyle 	= box.color;
+				context.strokeStyle = box.color;
+				context.linewidth 	= 2;
+				/*
+				context.fillRect(x, y, w, h-2);
+				*/
+				
+				// Draw a rounded box
+				roundRect(context, x, y, w, h-2, 7, true, true)
+		
+				// Remove this value from the array
+				//boxes.shift();
+			
+			}
+		
+			
+			// Render boxes to the right now that we've removed one value
+			boxes = renderBox(canvas_name, context, boxes, x + w + 2, y, scale, width, y + h);
+				
+			// If we skipped this because it didn't fit, put it back before sending the array down below
+			if (skipped) {
+				//alert("shifted box back in");
+				boxes.unshift(box);
+			}
+			else {
+				// Render boxes to the bottom minus any we've already rendered
+				boxes = renderBox(canvas_name, context, boxes, 0, y + h, scale, width, height);
+			}
+				
+			///if (boxes.length < 1) {		
+			//	boxes = new Array();
+			// }
+		
+		}
+		
+		return boxes;
+	}
+	
 	// drawScatterPlot	Draws a scatter plot in an html canvas
 	//
 	// Parameters:
@@ -649,3 +817,42 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 			return getNumWithSetDec( stdDev, numOfDec );
 			
 		};
+		
+/**
+ * Draws a rounded rectangle using the current state of the canvas. 
+ * If you omit the last three params, it will draw a rectangle 
+ * outline with a 5 pixel border radius 
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {Number} x The top left x coordinate
+ * @param {Number} y The top left y coordinate 
+ * @param {Number} width The width of the rectangle 
+ * @param {Number} height The height of the rectangle
+ * @param {Number} radius The corner radius. Defaults to 5;
+ * @param {Boolean} fill Whether to fill the rectangle. Defaults to false.
+ * @param {Boolean} stroke Whether to stroke the rectangle. Defaults to true.
+ */
+function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+  if (typeof stroke == "undefined" ) {
+    stroke = true;
+  }
+  if (typeof radius === "undefined") {
+    radius = 5;
+  }
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+  if (stroke) {
+    ctx.stroke();
+  }
+  if (fill) {
+    ctx.fill();
+  }        
+}
