@@ -440,7 +440,6 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 		}
 		
 		document.getElementById(table_name).innerHTML = html;
-		
 
 
 		// Get the canvas element we need

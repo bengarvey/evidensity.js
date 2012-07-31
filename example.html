@@ -50,8 +50,15 @@
 			
 			drawWhiskerSparkline('whiskertable', baseball, colors, names);
 			
+			var boxes		= new Array(450, 425, 300, 275, 250, 475, 200, 200, 200, 100, 50, 50, 50);
+			var colors		= new Array('#0F0','#020','#c00','#A00','#008','#070','#050','#005','#007','#009','#00B','#00D','#00F');
+			drawTreeMap('treemap1', boxes, colors);
+			
 		}
 	</script>
+	<style>
+	.border	{ border: 1px solid grey; }
+	</style>
 </head>
 <body onload="javascript:init();">
 	<div>Download <a href="https://github.com/bengarvey/evidensity.js">evidensity.js from github</a></div>
@@ -127,6 +134,8 @@
 		</table>
 		<h3>Scatter Plot</h3>
 		<div><canvas id="scatter1" height="50" width="200"></canvas></div>
+		<h3>Tree Map</h3>
+		<div><canvas id="treemap1" height="500" width="500"></canvas></div>
 	</div>
 	
 </body>
