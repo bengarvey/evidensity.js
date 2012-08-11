@@ -315,7 +315,7 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 						var x 		= 0;
 						var count 	= 0;
 						var xmargin	= 2;
-						var ymargin 	= 2;
+						var ymargin = 2;
 						var xpad	= 2;
 						var color	= "";
 						var barheight	= 0;
@@ -508,8 +508,8 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 	// Parameters:
 	// canvas_name		id of the canvas tag
 	// data				array of values to be mapped
-	// color			array of colors to use that corresponds with values in data
-	function drawTreeMap(canvas_name, data, color) {
+	// colors			array of colors to use that corresponds with values in data
+	function drawTreeMap(canvas_name, data, colors, labels) {
 	
 		// Get the canvas element we need
 		if (drawingCanvas = document.getElementById(canvas_name) ) {
@@ -527,7 +527,8 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 				for(d in data) {
 					boxes[d] 			= {};
 					boxes[d].size 		= data[d];
-					boxes[d].color 		= color[d];
+					boxes[d].color 		= colors[d];
+					boxes[d].label		= labels[d];
 				}
 				
 				drawingCanvas.boxArray = new Array();
@@ -622,11 +623,9 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 			if (x + w > width || y + h > height) {
 			
 				// We've reached the end of our room.  Unshift this one and see if we can draw a different one
-				//boxes.shift();
 				skipped = true;
 				w = 0;
 				h = 0;
-				//alert("no room at " + x + " " + y);
 			
 			}
 			else {
@@ -636,12 +635,18 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 				context.fillStyle 	= box.color;
 				context.strokeStyle = box.color;
 				context.linewidth 	= 2;
+				
 				/*
 				context.fillRect(x, y, w, h-2);
 				*/
 				
 				// Draw a rounded box
 				roundRect(context, x, y, w, h-2, 7, true, true)
+				
+				// Draw the label
+				context.font = "12pt Helvetica";
+				context.fillStyle = "white";
+				context.fillText(box.label, x+10, y+20);
 		
 				// Remove this value from the array
 				//boxes.shift();
@@ -817,7 +822,10 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 			return getNumWithSetDec( stdDev, numOfDec );
 			
 		};
-		
+	
+// Attribution for rounded rectangle function:
+// Juan Mendes 
+// http://js-bits.blogspot.com/2010/07/canvas-rounded-corner-rectangles.html	
 /**
  * Draws a rounded rectangle using the current state of the canvas. 
  * If you omit the last three params, it will draw a rectangle 
