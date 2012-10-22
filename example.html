@@ -3,6 +3,12 @@
 <head>
 	<title>Example usage for evidensity.js</title>
 	<script src="evidensity.js"></script>
+	<script src="e/jquery.js"></script>
+	<style>
+		body	{	font-family: sans-serif;
+					font-size:  14px;	
+				}
+	</style>
 	<script>
 		function init() {
 			
@@ -106,6 +112,7 @@
 										 '568158');
 			
 			var labels 		= new Array('Alabama', 
+										'Alaska',
 										'Arizona',
 										 'Arkansas',
 										 'California',
@@ -156,7 +163,7 @@
 										 'Wisconsin',
 										 'Wyoming');
 			
-			drawTreeMap('treemap1', boxes, colors, labels);
+			drawTreeMap('treemap1', boxes, "", labels);
 			
 		}
 	</script>
@@ -234,9 +241,11 @@
 			</tr>
 		</table>
 		<h3>Scatter Plot</h3>
-		<div><canvas id="scatter1" height="50" width="200"></canvas></div>
+		<div><canvas id="scatter1" height="50" width="500"></canvas></div>
 		<h3>Tree Map</h3>
-		<div><canvas id="treemap1" height="500" width="500"></canvas></div>
+		<p>US Populations by State</p>
+		<div><canvas id="treemap1" height="500" width="800"></canvas></div>
+		<!-- <div id=treemapdata></div> -->
 	</div>
 	
 </body>

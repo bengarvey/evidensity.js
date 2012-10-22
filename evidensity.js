@@ -3,6 +3,9 @@
 // http://www.bengarvey.com
 // Twitter:  @bengarvey
 // ben@bengarvey.com
+//
+// Hosted at https://github.com/bengarvey/evidensity.js/
+// License:  https://github.com/bengarvey/evidensity.js/blob/master/mit-license.txt
 
 // drawSparkLine	Draws a line graph the size of your canvas.  Intended for tiny canvases to make Tufte style sparklines.
 // It automatically y-scales the graph to within one standard deviation of the mean
@@ -26,177 +29,176 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 			// Get the canvas element we need
 			if (drawingCanvas = document.getElementById(canvas_name) ) {
 			
-			var vpadding = 4;
-			var hpadding = 4;
-			
-			var cheight = drawingCanvas.height - vpadding;
-			var cwidth = drawingCanvas.width - hpadding;
-			var chmin = vpadding/2;
-			var cwmin = hpadding/2;
-			var yscale = 0;
-			
-			// default scale is min and max values
-			var scale = Math.max.apply(Math, data);
-			var floor = Math.min.apply(Math, data);
-			
-			// How should we scale this?
-			if (scale_type == "sd") { // standard deviation?
-				scale = getAverageFromNumArr(data) + (getStandardDeviation(data, 0)*1);
-				floor = getAverageFromNumArr(data) - (getStandardDeviation(data, 0)*1);
-			}
-			
-			// Reset the floor to zero if it is below.  Will change this later as an option
-			if (floor < 0) { 
-				floor = 0
-			}
-			
-			var maxy = yscale;
-			var maxx = 0;
-			var miny = scale;
-			var minx = 0;
-			
-			var moving = new Array();
-			var movingAvgLength = 3;
-			
-			moving = createMovingAverage(data,movingAvgLength);
-						
-			// Check the element is in the DOM and the browser supports canvas
-			if(drawingCanvas && drawingCanvas.getContext) {
-		
-				// Initaliase a 2-dimensional drawing context
-				context = drawingCanvas.getContext('2d');
+				var vpadding = 4;
+				var hpadding = 4;
+				var cheight = drawingCanvas.height - vpadding;
+				var cwidth = drawingCanvas.width - hpadding;
+				var chmin = vpadding/2;
+				var cwmin = hpadding/2;
+				var yscale = 0;
 				
-				// Draw the gray normal range boxes
-				context.fillStyle = '#DDD';
-				context.strokeStyle = '#DDD';
-				context.linewidth = 2;
-				context.fillRect(cwmin, cheight - (cheight * max_range/scale) + chmin, cwidth, (cheight * (max_range - min_range)/scale));
-	
-				context.fillStyle   = '#00f';
-				context.strokeStyle = '#CAA';
-				context.lineWidth   = 1;
-				context.beginPath();
-
-				realMin = data[0];
-				realMax = 0;
-				realFirst = data[0];
-				realLast = 0;
- 
-				// Loop through the data points and plot on the canvas
-				for (i in data) {
+				// default scale is min and max values
+				var scale = Math.max.apply(Math, data);
+				var floor = Math.min.apply(Math, data);
 				
-					// Calculate the y value of the point for the sparkline	
-					yscale = (( (data[i] - floor) / (scale - floor) ) * cheight) - chmin;
-					
-					// This spreads the sparkline across the whole canvas and makes sure we don't cut off the ends
-					x = (i * (cwidth/(data.length))) + cwmin;
-					
-					// Upper left is 0,0 on the canvas, so we have to translate it 
-					context.lineTo(x, (cheight - yscale));
-					
-					// Save the edge cases for later
-					if (yscale > maxy) {
-						maxy = yscale;
-						maxx = x;
-						realMax = data[i];
-					}
-					
-					if (yscale < miny) {
-						miny = yscale;
-						minx = x;
-						realMin = data[i];
-					}
-					
-					if (i==0) {
-						firstx = x;
-						firsty = yscale;
-					}
-					
-					if (i==data.length-1) {
-						lastx = x;
-						lasty = yscale;
-						realLast = data[i];
-					}
+				// How should we scale this?
+				if (scale_type == "sd") { // standard deviation?
+					scale = getAverageFromNumArr(data) + (getStandardDeviation(data, 0)*1);
+					floor = getAverageFromNumArr(data) - (getStandardDeviation(data, 0)*1);
 				}
 				
-				context.stroke();
+				// Reset the floor to zero if it is below.  Will change this later as an option
+				if (floor < 0) { 
+					floor = 0
+				}
 				
-				context.fillStyle   = '#00f';
-				context.strokeStyle = '#444';
-				context.lineWidth   = 1;
-				context.beginPath();
-								
-				// Draw the moving average
-				if (show_moving) {		
-					for (i in moving) {
+				var maxy = yscale;
+				var maxx = 0;
+				var miny = scale;
+				var minx = 0;
+				
+				var moving = new Array();
+				var movingAvgLength = 3;
+				
+				moving = createMovingAverage(data,movingAvgLength);
+							
+				// Check the element is in the DOM and the browser supports canvas
+				if(drawingCanvas && drawingCanvas.getContext) {
+			
+					// Initaliase a 2-dimensional drawing context
+					context = drawingCanvas.getContext('2d');
+					
+					// Draw the gray normal range boxes
+					context.fillStyle = '#DDD';
+					context.strokeStyle = '#DDD';
+					context.linewidth = 2;
+					context.fillRect(cwmin, cheight - (cheight * max_range/scale) + chmin, cwidth, (cheight * (max_range - min_range)/scale));
+		
+					context.fillStyle   = '#00f';
+					context.strokeStyle = '#CAA';
+					context.lineWidth   = 1;
+					context.beginPath();
+	
+					realMin = data[0];
+					realMax = 0;
+					realFirst = data[0];
+					realLast = 0;
+	 
+					// Loop through the data points and plot on the canvas
+					for (i in data) {
 					
 						// Calculate the y value of the point for the sparkline	
-						yscale = (( (moving[i] - floor) / (scale - floor) ) * cheight) - chmin;
+						yscale = (( (data[i] - floor) / (scale - floor) ) * cheight) - chmin;
 						
 						// This spreads the sparkline across the whole canvas and makes sure we don't cut off the ends
-						x = ((parseInt(i) + data.length - moving.length) * (cwidth/(data.length)));					
+						x = (i * (cwidth/(data.length))) + cwmin;
 						
 						// Upper left is 0,0 on the canvas, so we have to translate it 
 						context.lineTo(x, (cheight - yscale));
+						
+						// Save the edge cases for later
+						if (yscale > maxy) {
+							maxy = yscale;
+							maxx = x;
+							realMax = data[i];
+						}
+						
+						if (yscale < miny) {
+							miny = yscale;
+							minx = x;
+							realMin = data[i];
+						}
+						
+						if (i==0) {
+							firstx = x;
+							firsty = yscale;
+						}
+						
+						if (i==data.length-1) {
+							lastx = x;
+							lasty = yscale;
+							realLast = data[i];
+						}
 					}
+					
+					context.stroke();
+					
+					context.fillStyle   = '#00f';
+					context.strokeStyle = '#444';
+					context.lineWidth   = 1;
+					context.beginPath();
+									
+					// Draw the moving average
+					if (show_moving) {		
+						for (i in moving) {
+						
+							// Calculate the y value of the point for the sparkline	
+							yscale = (( (moving[i] - floor) / (scale - floor) ) * cheight) - chmin;
+							
+							// This spreads the sparkline across the whole canvas and makes sure we don't cut off the ends
+							x = ((parseInt(i) + data.length - moving.length) * (cwidth/(data.length)));					
+							
+							// Upper left is 0,0 on the canvas, so we have to translate it 
+							context.lineTo(x, (cheight - yscale));
+						}
+					}
+					
+					context.stroke();
+					
+					// We should have found our min and max values.  Note them with blue
+					context.fillStyle = '#1166FF';
+					context.strokeStyle = '#fff';
+					context.beginPath();
+					context.arc(maxx, (cheight - maxy),1.25,0,Math.PI*2,true);
+					context.closePath();
+					context.stroke();
+					context.fill();
+	 
+					// Add a dot for the lowest data point to the sparkline
+					context.fillStyle = '#1166FF';
+					context.strokeStyle = '#fff';
+					context.beginPath();
+					context.arc(minx, (cheight - miny),1.25,0,Math.PI*2,true);
+					context.closePath();
+					context.stroke();
+					context.fill();
+					
+					// Note the start and ends with red dots
+					context.fillStyle = '#FF0000';
+					context.strokeStyle = '#fff';
+					context.beginPath();
+					context.arc(firstx, (cheight - firsty),1.25,0,Math.PI*2,true);
+					context.closePath();
+					context.stroke();
+					context.fill();
+	 
+					// Add a dot for the lowest data point to the sparkline
+					context.fillStyle = '#FF0000';
+					context.strokeStyle = '#fff';
+					context.beginPath();
+					context.arc(lastx, (cheight - lasty),1.25,0,Math.PI*2,true);
+					context.closePath();
+					context.stroke();
+					context.fill();
+	
+					// If there is a special field for this data, display it
+					if (document.getElementById(canvas_name + "-min")) {	
+						document.getElementById(canvas_name + "-min").innerHTML 	= formatNumber(realMin, pre);
+					}
+	
+					if (document.getElementById(canvas_name + "-max")) {
+						document.getElementById(canvas_name + "-max").innerHTML 	= formatNumber(realMax, pre);
+					}
+	
+					if (document.getElementById(canvas_name + "-first")) {
+						document.getElementById(canvas_name + "-first").innerHTML 	= formatNumber(realFirst, pre);
+					}
+	
+					if (document.getElementById(canvas_name + "-last")) {
+						document.getElementById(canvas_name + "-last").innerHTML 	= formatNumber(realLast, pre);
+					}
+	
 				}
-				
-				context.stroke();
-				
-				// We should have found our min and max values.  Note them with blue
-				context.fillStyle = '#1166FF';
-				context.strokeStyle = '#fff';
-				context.beginPath();
-				context.arc(maxx, (cheight - maxy),1.25,0,Math.PI*2,true);
-				context.closePath();
-				context.stroke();
-				context.fill();
- 
-				// Add a dot for the lowest data point to the sparkline
-				context.fillStyle = '#1166FF';
-				context.strokeStyle = '#fff';
-				context.beginPath();
-				context.arc(minx, (cheight - miny),1.25,0,Math.PI*2,true);
-				context.closePath();
-				context.stroke();
-				context.fill();
-				
-				// Note the start and ends with red dots
-				context.fillStyle = '#FF0000';
-				context.strokeStyle = '#fff';
-				context.beginPath();
-				context.arc(firstx, (cheight - firsty),1.25,0,Math.PI*2,true);
-				context.closePath();
-				context.stroke();
-				context.fill();
- 
-				// Add a dot for the lowest data point to the sparkline
-				context.fillStyle = '#FF0000';
-				context.strokeStyle = '#fff';
-				context.beginPath();
-				context.arc(lastx, (cheight - lasty),1.25,0,Math.PI*2,true);
-				context.closePath();
-				context.stroke();
-				context.fill();
-
-				// If there is a special field for this data, display it
-				if (document.getElementById(canvas_name + "-min")) {	
-					document.getElementById(canvas_name + "-min").innerHTML 	= formatNumber(realMin, pre);
-				}
-
-				if (document.getElementById(canvas_name + "-max")) {
-					document.getElementById(canvas_name + "-max").innerHTML 	= formatNumber(realMax, pre);
-				}
-
-				if (document.getElementById(canvas_name + "-first")) {
-					document.getElementById(canvas_name + "-first").innerHTML 	= formatNumber(realFirst, pre);
-				}
-
-				if (document.getElementById(canvas_name + "-last")) {
-					document.getElementById(canvas_name + "-last").innerHTML 	= formatNumber(realLast, pre);
-				}
-
-			}
 
 		}
 	
@@ -266,7 +268,7 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 	// Parameters:
 	// canvas_name		id of the canvas tag
 	// values			array of values to draw in the bar graph as a % of the canvas's width
-	// color		hex color value of the bar graph
+	// color			hex color value of the bar graph
 	function drawStackedBar(canvas_name, values, colors) {
 					drawingCanvas = document.getElementById(canvas_name);
 										
@@ -310,20 +312,20 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 					// Check the element is in the DOM and the browser supports canvas
 					if(drawingCanvas && drawingCanvas.getContext) {	
 					
-						var height 	= drawingCanvas.height;
-						var width 	= drawingCanvas.width;
-						var x 		= 0;
-						var count 	= 0;
-						var xmargin	= 2;
-						var ymargin = 2;
-						var xpad	= 2;
-						var color	= "";
+						var height 		= drawingCanvas.height;
+						var width 		= drawingCanvas.width;
+						var x 			= 0;
+						var count 		= 0;
+						var xmargin		= 2;
+						var ymargin 	= 2;
+						var xpad		= 2;
+						var color		= "";
 						var barheight	= 0;
 						var barwidth	= 0;
-						var scale 	= Math.max.apply(Math, values);
-						var floor 	= Math.min.apply(Math, values);
-						var centery	= 0;
-						var range 	= 0;
+						var scale 		= Math.max.apply(Math, values);
+						var floor 		= Math.min.apply(Math, values);
+						var centery		= 0;
+						var range 		= 0;
 						
 						// Not sure if setting these to 0 is the best way, but I think it's the most expected handling of weird values
 						if (floor > 0) {
@@ -375,7 +377,7 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 					}
 	}
 	
-	// drawWhiskerSparkline 	Draws a whisker sparkline
+	// drawWhiskerSparkline 	Draws a whisker sparkline using an HTML table and canvas
 	//
 	// Parameters:
 	// canvas_name		id of the canvas element
@@ -403,6 +405,7 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 		
 			teams[d] = {};
 		
+			// Generate the HTML for the table
 			if (first) {
 				html += "<tr>" 
 					+ "<td id=name-" + d + "></td>" 
@@ -483,15 +486,18 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 						}
 					}
 					
+					// Draw the line
 					context.stroke();
 				}
 					
+				// Sorting the values to put them in the right order from their final values
 				teams.sort( 
 					function(a, b) { 
 						return b.standing - a.standing;
 					}
 				);
 				
+				// Fill in the names of the teams
 				for (i in teams) {
 					document.getElementById("standing-" + i).innerHTML 		= teams[i].standing; 
 					document.getElementById("name-" 	+ i).innerHTML 		= teams[i].name;
@@ -501,6 +507,28 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 			
 			}
 		}
+	}
+	
+	// randomColor	Returns a random hex color
+	//
+	// Parameters
+	// none
+	function randomColor() {
+
+		// initialize some variables
+		var color 	= "#";
+		var c 		= "";
+		var i		= 0;
+		
+		// Loop through and pick a random hex value.  Then add it to the string.
+		while(i<6) { 
+			c = Math.round(Math.random()*13);
+			c = c.toString(16);
+			color += c;
+			i++;
+		}
+		
+		return color;
 	}
 	
 	// drawTreeMap	Draws a Treemap on an HTML5 canvas
@@ -516,77 +544,175 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 									
 			// Check the element is in the DOM and the browser supports canvas
 			if(drawingCanvas && drawingCanvas.getContext) {
+			
+						drawingCanvas.addEventListener("mouseover", 
+     						function(e) {	
+	     						// Capture x and y
+	     						//var clickx = e.clientX - drawingCanvas.offsetLeft;
+	     						//var clicky = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;	
+	     						var clickx = e.pageX - drawingCanvas.offsetLeft;
+	     						var clicky = e.pageY - drawingCanvas.offsetTop;
+	     						
+		     					// We've clicked.  		
+		     					//alert("mouseover:  " + clickx + ", " + clicky);
+		     					
+								// Check coordinates to see what box we clicked in
+								for(b in drawingCanvas.boxArray) {
+									box = drawingCanvas.boxArray[b];
+									if (clickx > box.x && clickx < (box.x + box.w) && clicky > box.y && clicky < (box.y + box.h) ) {
+										
+										// We found it!  
+										//alert(box.label);
+										
+										var infodiv = {};
+										var sheet = {};
+										
+										// Check to see if we have an info div 
+										if (document.getElementById('treemap-info-div') == null) {
+											infodiv = document.createElement('div');
+											infodiv.setAttribute('id', 'treemap-info-div');
+											
+											//alert(infodiv.id);
+																						
+											sheet = document.createElement('style');
+											sheet.innerHTML = "#treemap-info-div {	border: 1px solid #555555; 	\
+																					font: Arial;				\
+																					color:  #555555;			\
+																					font-size: 10pt;			\
+																					position:  absolute;		\
+																					z-index: 100;				\
+																					top:	50px;				\
+																					left: 50px;					\
+																				}";
+											document.body.appendChild(sheet);
+											document.body.appendChild(infodiv);
+											
+											
+											//document.body.appendChild(infodiv);
+
+											
+										}
+										else {
+											infodiv = document.getElementById('treemap-info-div');
+										}
+										
+										infodiv = document.getElementById('treemap-info-div');
+										
+										infodiv.innerHTML = box.label;
+										
+										//alert(infodiv.style.top);
+
+										// Move info div into position
+										//infodiv.style.setAttribute('left', box.x + box.w + 10);
+										//infodiv.style.setAttribute('top', box.y);
+										
+										$('#treemap-info-div').css('top', box.x + box.w + 10);
+										$('#treemap-info-div').css('left', box.y);
+										$('#treemap-info-div').css('visibility', 'visible');
+										
+										// Show info div
+										//infodiv.stylesetAttribute('visibility', 'visible');
+										
+										//alert(infodiv.style.top);
+										
+									}
+								}
+								
+	     					}
+						);
+			
+						drawingCanvas.addEventListener("click", 
+     						function(e) {	
+	     						// Capture x and y
+	     						//var clickx = e.clientX - drawingCanvas.offsetLeft;
+	     						//var clicky = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;	
+	     						var clickx = e.pageX - drawingCanvas.offsetLeft;
+	     						var clicky = e.pageY - drawingCanvas.offsetTop;
+	     						
+		     					// We've clicked.  		
+		     					//alert("clicked:  " + clickx + ", " + clicky);
+		     					
+								// Test box values
+								//for(d in drawingCanvas.boxArray) {
+								//	alert(drawingCanvas.boxArray[d].x);
+								//}
+								
+								// Check coordinates to see what box we clicked in
+								for(b in drawingCanvas.boxArray) {
+									box = drawingCanvas.boxArray[b];
+									if (clickx > box.x && clickx < (box.x + box.w) && clicky > box.y && clicky < (box.y + box.h) ) {
+										
+										// We found it!  
+										alert(box.label);
+									}
+								}
+	     					}
+						);
 				
 				// Initaliase a 2-dimensional drawing context
 				context = drawingCanvas.getContext('2d');
 				drawingCanvas.resizing = false;
 	
 				boxes = new Array();
+				var colorcount = 0;
 			
 				// First create the box objects
 				for(d in data) {
+				
+					// Loop back around if we don't pass in a color for every value
+					if (colorcount >= colors.length) {
+						colorcount = 0;
+					}
+				
+					// initialize the box object
 					boxes[d] 			= {};
+					
+					// The main data point, the size of the box to draw
 					boxes[d].size 		= data[d];
-					boxes[d].color 		= colors[d];
+					
+					// Set color if none were passed in
+					if (colors.length == 0) {
+						boxes[d].color 		= randomColor();
+					}
+					else {
+						boxes[d].color 		= colors[colorcount];
+					}
+					
+					// The text to display over the box
 					boxes[d].label		= labels[d];
+					
+					// increment our color counter
+					colorcount++;
+					
 				}
 				
+				// We need to save the array of boxes and retrieve it later, so use the canvas
 				drawingCanvas.boxArray = new Array();
-				//drawingCanvas.boxArray[0] = boxes[0];
 				
+				// This seems wrong, but I had issues setting the array as a whole.  It worked fine setting each element individually
 				for(d in boxes) {
 					drawingCanvas.boxArray[d] = boxes[d];
 				}
 				
-				
+				// Sort them largest to smallest, so the treemap gets drawn nicely
 				boxes.sort( 
 					function(a, b) { 
 						return b.size - a.size;
 					}
 				);
 		
+				// Grabbing the div height
 				var height 		= drawingCanvas.height;
 				var width 		= drawingCanvas.width;
 				
-				// Render the boxes
-				renderBox(canvas_name, context, boxes, 0, 0, 75, width, height);		
-				canvas = document.getElementById(canvas_name);
-                        
-                /*
-			    canvas.addEventListener("click", 
-			     					function(e) {				
-							// We've clicked.  Check to see where it is
-							var rect = canvas.getBoundingClientRect();
-							
-							if (canvas.resizing) {
-							
-								canvas.height = e.clientY-rect.top;
-								canvas.width = e.clientX-rect.left;
-								canvas.resizing = false;
-								renderBox(canvas.id, context, canvas.boxArray, 0, 0, 75, canvas.width, canvas.height);
-
-							}
-							else {
-											
-								if ( (e.clientX > canvas.width - 10) && (e.clientY > canvas.height - 10)) {
-									
-									//alert("bottom corner");
-									canvas.resizing = true;
-								}
-							}
-						
-							
-							})
-
-				*/
-
-		
+				// Render the boxes.  renderBox is a recursive function that calls itself to draw all the boxes
+				renderBox(canvas_name, context, boxes, 0, 0, 28, width, height);		
 			}
 		}
 		
 	}
 	
-	// renderBox 		Renders a single treemap box
+	// renderBox 		Renders a treemap and recursively calls itself to fill in the rest of the map
 	//
 	// Parameters:
 	// context			drawing context
@@ -595,82 +721,126 @@ function drawSparkline(canvas_name, scale_type, min_range, max_range, data, show
 	// y				starting y value of the drawing context
 	// scale			scale for values
 	//
-	// Returns:			array of objects to be rendered
+	// Returns:			array of objects still to be rendered
 	function renderBox(canvas_name, context, boxes, x, y, scale, width, height) {
 	
+		// If we pass in an empty array, we're done.
 		if (boxes.length > 0) {
 	
-			var box = boxes.shift();
-	
-			var w   = (Math.sqrt(box.size) / scale) * width;
-			var h 	= w;
+			// Shift this box out of the array.  If we end up not rendering it, we'll have to put it back in
+			var box 	= boxes.shift();
+			var skipped = false;
+
+			// Width and height of the box. We try to draw a square, but might adjust it depending on how much room we have
+			var w   	= (Math.sqrt(box.size) / scale);
+			var h 		= w;
+			var temp 	= 0;
 			
-			
-			if (h > ( (height-y) / 2)) {
-				var temp = w * h;
+			// Check to see if there's just a little bit left in the box below.  If so, just use it.
+			if (( (height - y - h) / height) < 0.1 && height > y) {
+				temp = w * h;
 				h = height-y;
 				w = temp / h;
 				
 			}
+			else if (( (width - x - w) / width) < 0.15 && width > x) {
+				temp = w * h;
+				w = width-x;
+				h = temp / w;
+				
+			}
+
+			// If I draw this box as a square, will I exceed the boundary?
+			if (w > (width-x) || h > (height-y)) {
 			
+				// Resize it to fit
+				tempa = w * h;
+				w = width - x;
+				h = tempa / w;
+					
+				// Does the height now exceed the boundary?
+				if (y + h > height) {
+						
+					// We've reached the end of our room.  Unshift this one and see if we can draw a different one
+					skipped = true;
+
+				}
+
+			}
 			
-			var skipped = false;
-			
-			//alert("X:  " + x + " +  " + w + " = " + (x + w) + " vs " + width + " | " + box.size);
-			//alert("Y:  " + y + " +  " + h + " = " + (y + h) + " vs " + height + " | " + box.size);
-			
-			// If I draw this box, will I exceed the boundary?
-			if (x + w > width || y + h > height) {
-			
-				// We've reached the end of our room.  Unshift this one and see if we can draw a different one
+			// if our height and width ratios are too crazy, skip drawing this box here even though it technically fits
+			if (w/h > 20 || h/w > 10) {
 				skipped = true;
+			}
+			
+			// If we're skipping, send the next box the same dimensions we received.
+			if (skipped) {
 				w = 0;
 				h = 0;
-			
+				
 			}
 			else {
 		
 				// Draw the box
-				
 				context.fillStyle 	= box.color;
-				context.strokeStyle = box.color;
+				context.strokeStyle = '#FFFFFF';
 				context.linewidth 	= 2;
 				
-				/*
-				context.fillRect(x, y, w, h-2);
-				*/
+				// If you have a div called treemapdata it will post some of the data.  Useful for debugging
+				if (document.getElementById('treemapdata') != null) {
+					document.getElementById('treemapdata').innerHTML += box.label + " height " + Math.round(y) + " " + Math.round(h) + " " + Math.round(height) + "<br>";
+					document.getElementById('treemapdata').innerHTML += box.label + " width " + Math.round(x) + " " + Math.round(w) + " " + Math.round(width) + "<br>";
+				}
 				
 				// Draw a rounded box
-				roundRect(context, x, y, w, h-2, 7, true, true)
+				roundRect(context, x, y, w, h-2, 7, true, true);
+				
+				// Save the coordinates in the box object
+				box.x = x;
+				box.y = y;
+				box.w = w;
+				box.h = h;
 				
 				// Draw the label
 				context.font = "12pt Helvetica";
 				context.fillStyle = "white";
-				context.fillText(box.label, x+10, y+20);
-		
-				// Remove this value from the array
-				//boxes.shift();
+				var label = box.label;
+				
+				// Shrink the label string until it fits.
+				while(context.measureText(label).width > w-4 && label.length > 0) {
+					label = label.substr(0,label.length-1);
+									//alert(context.measureText(box.label).width + " vs " + (w-10) + " " + label.length);
+				}
+				
+				// Only show labels for ones where it will fit horizontally, too
+				if (h > 15) {
+					context.fillText(label, x+4, y+17, w);
+				}
 			
 			}
-		
 			
+			// We need separate height values for each recursive call
+			var nextheight = y + h;
+			
+			if (skipped) {
+				nextheight = height;
+			}
+		
 			// Render boxes to the right now that we've removed one value
-			boxes = renderBox(canvas_name, context, boxes, x + w + 2, y, scale, width, y + h);
+			boxes = renderBox(canvas_name, context, boxes, x + w, y, scale, width, nextheight);
 				
 			// If we skipped this because it didn't fit, put it back before sending the array down below
 			if (skipped) {
-				//alert("shifted box back in");
 				boxes.unshift(box);
 			}
 			else {
-				// Render boxes to the bottom minus any we've already rendered
-				boxes = renderBox(canvas_name, context, boxes, 0, y + h, scale, width, height);
+			
+				// Only check below if there is room left
+				if (y+h < height) {
+					// Render boxes to the bottom minus any we've already rendered
+					boxes = renderBox(canvas_name, context, boxes, x, y + h, scale, width, height);
+				}
 			}
-				
-			///if (boxes.length < 1) {		
-			//	boxes = new Array();
-			// }
-		
 		}
 		
 		return boxes;
